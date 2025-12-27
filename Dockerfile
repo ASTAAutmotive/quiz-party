@@ -4,6 +4,8 @@ WORKDIR /app
 
 # Server-Code kopieren
 COPY server ./server
+COPY client ./client
+
 
 # Abhängigkeiten installieren
 RUN cd server && npm install
