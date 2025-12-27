@@ -22,7 +22,7 @@ const io = new Server(httpServer, {
 // Stelle statische Dateien aus dem client-Ordner bereit
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const clientPath = path.join(__dirname, '..', 'client');
+const clientPath = path.join(__dirname, '..', '..', 'client');
 app.use(express.static(clientPath));
 
 // Verwende GameStore für mehrere Spiele
