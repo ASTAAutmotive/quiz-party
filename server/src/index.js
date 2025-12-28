@@ -80,14 +80,36 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Spiel existiert nicht' });
       return;
     }
-    const player = Array.from(game.players.values()).find(p => p.token === token);
-    if (!player) {
+
+    // Finde Player-Eintrag (inkl. Map-Key), nicht nur das Objekt
+    const entry = Array.from(game.players.entries()).find(([id, p]) => p.token === token);
+    if (!entry) {
       socket.emit('error', { message: 'Spieler nicht gefunden' });
       return;
     }
-    // Update Socket ID und Status
-    player.id = socket.id;
-    player.connected = true;
+    const [oldId, player] = entry;
+
+    // Wenn sich die socket.id geändert hat, migriere den Map-Key und ggf. die Antwort-Einträge
+    if (oldId !== socket.id) {
+      // Entferne alten Eintrag und setze neuen Key
+      game.players.delete(oldId);
+      player.id = socket.id;
+      player.connected = true;
+      game.players.set(socket.id, player);
+
+      // Migriere vorhandene Antwort (falls vorhanden) auf die neue socket.id
+      if (game.answers && game.answers.has(oldId)) {
+        const ans = game.answers.get(oldId);
+        game.answers.delete(oldId);
+        game.answers.set(socket.id, ans);
+      }
+    } else {
+      // gleiche id (sehr selten), nur Status setzen
+      player.connected = true;
+      player.id = socket.id;
+      game.players.set(socket.id, player);
+    }
+
     socket.join(game.code);
     // schicke aktuellen Zustand zurück
     const currentQuestion = game.questions[game.questionIndex] || {};
