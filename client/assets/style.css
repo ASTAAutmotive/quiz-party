@@ -1,20 +1,22 @@
+/*
+  IMPORTANT:
+  - theme.css ist unser zentrales Designsystem (Lovable-Style).
+  - style.css sollte nur minimale Layout-Hilfen/Legacy-Regeln enthalten
+    und theme.css NICHT überschreiben.
+*/
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f5f5f5;
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
 
+/* Container wird gemeinsam mit .card verwendet; keine eigenen Max-Width/Backgrounds setzen */
 .container {
-  padding: 20px;
-  margin: auto;
-  max-width: 600px;
-  width: 90%;
+  width: 100%;
 }
 
-button {
+/* Legacy-Buttons nur für Buttons ohne .btn-Klassen */
+button:not(.btn) {
   padding: 10px 20px;
   margin: 10px 0;
   font-size: 16px;
@@ -25,12 +27,7 @@ button {
   display: none;
 }
 
-#question-options button {
-  display: block;
-  width: 100%;
-  margin: 8px 0;
-  padding: 10px;
-}
+
 
 .leaderboard {
   margin-top: 20px;
