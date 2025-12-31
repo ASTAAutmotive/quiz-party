@@ -1,46 +1,25 @@
-/*
-  IMPORTANT:
-  - theme.css ist unser zentrales Designsystem (Lovable-Style).
-  - style.css sollte nur minimale Layout-Hilfen/Legacy-Regeln enthalten
-    und theme.css NICHT überschreiben.
-*/
+/* style.css
+ * IMPORTANT:
+ * This file should contain only minimal layout helpers.
+ * All visual design (colors, typography, buttons, cards, backgrounds) lives in theme.css.
+ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
 
 body {
-  margin: 0;
   min-height: 100vh;
 }
 
-/* Container wird gemeinsam mit .card verwendet; keine eigenen Max-Width/Backgrounds setzen */
+/* Keep legacy utility used across pages */
+.hidden {
+  display: none !important;
+}
+
+/* Optional: keep containers flexible without imposing a design */
 .container {
   width: 100%;
-}
-
-/* Legacy-Buttons nur für Buttons ohne .btn-Klassen */
-button:not(.btn) {
-  padding: 10px 20px;
-  margin: 10px 0;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.hidden {
-  display: none;
-}
-
-
-
-.leaderboard {
-  margin-top: 20px;
-}
-
-.leaderboard table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.leaderboard th,
-.leaderboard td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
 }
