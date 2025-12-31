@@ -4,17 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quiz‑Party – Beitreten</title>
+  <!-- Designsystem (Lovable-Style) zuerst laden, danach ggf. kleine Overrides -->
+  <link rel="stylesheet" href="./assets/theme.css" />
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="card container">
     <h1>Quiz‑Party – Spiel beitreten</h1>
     <div id="join-area">
       <label for="code">Spielcode:</label><br />
       <input type="text" id="code" maxlength="6" /><br />
       <label for="name">Dein Name:</label><br />
       <input type="text" id="name" /><br />
-      <button id="join-button">Beitreten</button>
+      <button id="join-button" class="btn btn-primary">Beitreten</button>
       <p id="join-error" style="color:red;"></p>
     </div>
   </div>

@@ -4,26 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quiz‑Party – TV</title>
+  <!-- Designsystem (Lovable-Style) zuerst laden, danach ggf. kleine Overrides -->
+  <link rel="stylesheet" href="./assets/theme.css" />
   <link rel="stylesheet" href="./assets/style.css" />
 </head>
 <body>
-  <div class="container">
+  <div class="card container">
     <h1>Quiz‑Party – Host/TV</h1>
     <!-- Lobby -->
     <div id="lobby">
-      <button id="create-game">Spiel erstellen</button>
+      <button id="create-game" class="btn btn-primary">Spiel erstellen</button>
       <div id="game-info" class="hidden">
         <p>Spielcode: <strong id="game-code"></strong></p>
         <h3>Spieler:</h3>
         <ul id="player-list"></ul>
-        <button id="start-game" disabled>Spiel starten</button>
+        <button id="start-game" class="btn btn-success" disabled>Spiel starten</button>
       </div>
     </div>
     <!-- Spielbereich -->
     <div id="game-area" class="hidden">
       <div id="question-area">
         <h2 id="question-text"></h2>
-        <div id="options-list"></div>
+        <div id="options-list" class="answers"></div>
         <p id="countdown"></p>
         <p id="answers-count"></p>
       </div>
