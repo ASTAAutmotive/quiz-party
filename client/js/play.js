@@ -39,9 +39,13 @@ function showQuestion(question, options, endTimestamp) {
   endArea.classList.add('hidden');
   questionTextEl.textContent = question;
   optionsDiv.innerHTML = '';
+  // Theme-compatible Grid
+  optionsDiv.classList.add('answers');
   hasAnswered = false;
   options.forEach((opt, idx) => {
     const btn = document.createElement('button');
+    // Theme styles
+    btn.className = 'answer';
     btn.textContent = opt;
     btn.addEventListener('click', () => {
       if (hasAnswered) return;

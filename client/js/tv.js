@@ -64,6 +64,7 @@ socket.on('questionStart', ({ question, options, endsAt }) => {
   optionsListEl.innerHTML = '';
   options.forEach(opt => {
     const p = document.createElement('p');
+    p.className = 'answer';
     p.textContent = opt;
     optionsListEl.appendChild(p);
   });
