@@ -25,6 +25,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientPath = path.join(__dirname, '..', '..', 'client');
 app.use(express.static(clientPath));
+// Friendly redirects (Backward compat)
+app.get('/', (req, res) => res.redirect('/tv.html'));
+app.get('/tv', (req, res) => res.redirect('/tv.html'));
+app.get('/join', (req, res) => res.redirect('/join.html'));
+app.get('/play', (req, res) => res.redirect('/play.html'));
 
 // Verwende GameStore für mehrere Spiele
 const store = new GameStore();
