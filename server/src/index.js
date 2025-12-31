@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 
 import { GameStore } from './gameStore.js';
 import { startGame, submitAnswer } from './logic.js';
+import { nanoid } from 'nanoid';
 
 // Erstelle Express-App und HTTP-Server
 const app = express();
@@ -28,6 +29,37 @@ app.use(express.static(clientPath));
 // Verwende GameStore für mehrere Spiele
 const store = new GameStore();
 
+// Konfigurierbare Limits (können über Umgebungsvariablen angepasst werden)
+const MAX_PLAYERS = parseInt(process.env.MAX_PLAYERS || '30', 10);
+const MIN_JOIN_INTERVAL_MS = parseInt(process.env.MIN_JOIN_INTERVAL_MS || '500', 10); // 0,5 s zwischen Join‑Versuchen
+const MIN_ANSWER_INTERVAL_MS = parseInt(process.env.MIN_ANSWER_INTERVAL_MS || '200', 10); // 0,2 s zwischen Antworten
+
+// In‑Memory‑Tracker für Rate‑Limiting
+const joinAttempts = new Map(); // socket.id → Zeitstempel des letzten Join‑Versuchs
+const answerAttempts = new Map(); // socket.id → Zeitstempel der letzten Antwort
+
+// Einfache Liste unerwünschter Wörter für den Profanity‑Filter
+const BANNED_WORDS = ['fuck', 'shit', 'arsch', 'bitch'];
+
+/**
+ * Sanitize den Spielernamen:
+ *  - Trim whitespace
+ *  - Entferne HTML‑Tags
+ *  - Ersetze unerwünschte Wörter durch Sternchen
+ *  - Kürze auf 30 Zeichen
+ */
+function sanitizeName(name) {
+  if (!name) return '';
+  // Trim und Tags entfernen
+  let clean = name.trim().replace(/<[^>]*>/g, '');
+  // Kürzen
+  if (clean.length > 30) clean = clean.slice(0, 30);
+  // Profanity‑Filter
+  const regex = new RegExp(BANNED_WORDS.join('|'), 'gi');
+  clean = clean.replace(regex, (match) => '*'.repeat(match.length));
+  return clean;
+}
+
 io.on('connection', (socket) => {
   console.log('Client verbunden', socket.id);
 
@@ -42,6 +74,15 @@ io.on('connection', (socket) => {
 
   // Spieler tritt einem Spiel bei
   socket.on('joinGame', ({ code, name }) => {
+    // Rate‑Limit Join: Verhindere Spamversuche
+    const nowTs = Date.now();
+    const lastJoin = joinAttempts.get(socket.id) || 0;
+    if (nowTs - lastJoin < MIN_JOIN_INTERVAL_MS) {
+      socket.emit('error', { message: 'Bitte warte einen Moment, bevor du erneut beitrittst.' });
+      return;
+    }
+    joinAttempts.set(socket.id, nowTs);
+
     const game = store.getGame(code);
     if (!game) {
       socket.emit('error', { message: 'Spiel existiert nicht' });
@@ -51,12 +92,22 @@ io.on('connection', (socket) => {
       socket.emit('error', { message: 'Spiel bereits gestartet' });
       return;
     }
+    // Max‑Spieler prüfen
+    if (game.players.size >= MAX_PLAYERS) {
+      socket.emit('error', { message: 'Spiel ist voll' });
+      return;
+    }
     // Erstelle PlayerId und Token (hier identisch)
     const playerId = socket.id;
-    const token = socket.id;
+    const token = nanoid();
+    const sanitizedName = sanitizeName(name);
+    if (!sanitizedName) {
+      socket.emit('error', { message: 'Ungültiger Name' });
+      return;
+    }
     const player = {
       id: playerId,
-      name,
+      name: sanitizedName,
       token,
       points: 0,
       connected: true,
@@ -65,7 +116,7 @@ io.on('connection', (socket) => {
     game.players.set(playerId, player);
     socket.join(game.code);
     // Sende Token und Id zurück
-    socket.emit('joined', { playerId, token, name });
+    socket.emit('joined', { playerId, token, name: sanitizedName });
     // Aktualisiere Spielerliste auf TV
     io.to(game.hostSocketId).emit('playerListUpdated', {
       players: Array.from(game.players.values()).map(p => ({ id: p.id, name: p.name, connected: p.connected }))
@@ -152,6 +203,13 @@ io.on('connection', (socket) => {
   socket.on('submitAnswer', ({ code, questionIndex, answerIndex }) => {
     const game = store.getGame(code);
     if (!game) return;
+    // Rate‑Limit Antworten
+    const now = Date.now();
+    const last = answerAttempts.get(socket.id) || 0;
+    if (now - last < MIN_ANSWER_INTERVAL_MS) {
+      return; // ignoriere zu schnelle Mehrfachklicks
+    }
+    answerAttempts.set(socket.id, now);
     submitAnswer(game, socket.id, answerIndex, io);
   });
 
@@ -169,6 +227,11 @@ io.on('connection', (socket) => {
       }
     });
   });
+});
+
+// Health‑Endpoint für Deployment
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
 });
 
 // Starte Server

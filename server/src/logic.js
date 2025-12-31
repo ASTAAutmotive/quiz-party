@@ -3,7 +3,8 @@ import { questions as allQuestions } from './questionBank.js';
 /**
  * Zeitlimit pro Frage in Millisekunden
  */
-const TIME_LIMIT_MS = 20000; // 20 Sekunden
+// Lese Zeitlimit aus Umgebungsvariablen; Default 30 s (30000 ms)
+const TIME_LIMIT_MS = parseInt(process.env.DEFAULT_QUESTION_MS || '30000', 10);
 
 /**
  * Mischt ein Array zufällig und gibt eine neue Kopie zurück.
@@ -36,6 +37,11 @@ export function startQuestion(game, io) {
   game.answers = new Map();
   const now = Date.now();
   game.endsAt = now + TIME_LIMIT_MS;
+
+  // Setze answered-Flag für alle Spieler zurück
+  game.players.forEach(player => {
+    player.answered = false;
+  });
 
   // Sende an alle Clients die Frage
   io.to(game.code).emit('questionStart', {
